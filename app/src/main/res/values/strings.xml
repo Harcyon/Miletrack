@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">MileTrack</string>
+    <string name="title_activity_maps">MileTrack</string>
+    <string name="tracking_button_start">Track</string>
+    <string name="tracking_button_stop">Stop Tracking</string>
+</resources>
