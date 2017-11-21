@@ -1,12 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="This is the add fragment layout. Will be hooked in with the DB.">
-    </TextView>
+    <TextView android:id="@+id/text1"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:paddingTop="16dp"
+        android:text="First Address"
+        android:layout_alignParentLeft="true"/>
 
-</LinearLayout>
+    <fragment android:id="@+id/place_autocomplete_fragment1"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/text1" />
+
+
+    <TextView android:id="@+id/text2"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:text="Second Address"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/text1"/>
+
+    <fragment
+        android:id="@+id/place_autocomplete_fragment2"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+        android:layout_below="@id/place_autocomplete_fragment1"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/text2"/>
+
+    <Button
+        android:layout_width="96dp"
+        android:layout_height="100dp"
+        android:id="@+id/add_event"
+        android:text="Add Event"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/place_autocomplete_fragment2"/>
+
+</RelativeLayout>
