@@ -43,6 +43,7 @@
         android:id="@+id/add_event"
         android:text="Add Event"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/place_autocomplete_fragment2"/>
+        android:layout_below="@id/place_autocomplete_fragment2"
+        android:onClick="onClickBtn"/>
 
 </RelativeLayout>

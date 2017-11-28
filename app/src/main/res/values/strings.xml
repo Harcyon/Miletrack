@@ -3,4 +3,12 @@
     <string name="title_activity_maps">MileTrack</string>
     <string name="tracking_button_start">Track</string>
     <string name="tracking_button_stop">Stop Tracking</string>
+    <string name="prompt">Choose...</string>
+    <string-array name="Duration">
+        <item>Today</item>
+        <item>Yesterday</item>
+        <item>Past Week</item>
+        <item>Past Month</item>
+
+    </string-array>
 </resources>

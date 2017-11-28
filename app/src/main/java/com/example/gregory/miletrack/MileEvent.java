@@ -1,5 +1,6 @@
 package com.example.gregory.miletrack;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -90,6 +91,8 @@ public class MileEvent {
     }
 
     public String getSQLeventDate() {
-        return "";
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+
+        return fmt.format(eventDate);
     }
 }
