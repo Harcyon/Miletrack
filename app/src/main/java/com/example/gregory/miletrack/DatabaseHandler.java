@@ -178,12 +178,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public Date parseDate(String str){
         SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
         Date date;
-            try {
-                date = sm.parse(str);
-            } catch (ParseException e){
-                e.printStackTrace();
-                date = new Date();
-            }
+        try {
+            date = sm.parse(str);
+        } catch (ParseException e){
+            e.printStackTrace();
+            date = new Date();
+        }
         return date;
     }
 

@@ -5,59 +5,89 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/time">
+        android:id="@+id/time"
+        android:background="@drawable/custom_border"
+        android:layout_marginTop="10dp">>
+
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="161dp"
             android:layout_height="wrap_content"
-            android:text="Choose duration."/>
+            android:layout_weight=".001"
+            android:text="Choose duration                      " />
         <Spinner
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/duration"
             android:entries="@array/Duration"
+            android:gravity="center"
+            android:layout_weight="5"
             android:prompt="@string/prompt">
         </Spinner>
     </LinearLayout>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/time"
-        android:id="@+id/total_mileage_layout">
+        android:id="@+id/total_mileage_layout"
+        android:background="@drawable/custom_border"
+        android:layout_marginTop="10dp">>
+
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="161dp"
             android:layout_height="wrap_content"
-            android:text="Total Mileage"/>
+            android:text="Total Mileage                             " />
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/total_mile_change"
+            android:layout_width="169dp"
             android:layout_height="wrap_content"
-            android:id="@+id/total_mile_change"/>
+            android:text="example"
+            android:textAlignment="center" />
     </LinearLayout>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/total_mileage_layout"
-        android:id="@+id/average_mileage_layout">
+        android:id="@+id/average_mileage_layout"
+        android:background="@drawable/custom_border"
+        android:layout_marginTop="10dp">>
+
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="165dp"
             android:layout_height="wrap_content"
-            android:text="average_mileage"/>
+            android:text="Average mileage" />
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/avg_mile_change"
+            android:layout_width="161dp"
             android:layout_height="wrap_content"
-            android:id="@+id/avg_mile_change"/>
+            android:text="example"
+            android:textAlignment="center" />
     </LinearLayout>
+
+
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/long_mile_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/average_mileage_layout"
-        android:id="@+id/long_mile_layout">
+        android:background="@drawable/custom_border"
+        android:layout_marginTop="10dp">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="161dp"
             android:layout_height="wrap_content"
-            android:text="Longest tracked distance"/>
+            android:text="Longest distance" />
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/long_mile_change"
+            android:layout_width="168dp"
             android:layout_height="wrap_content"
-            android:id="@+id/long_mile_change"/>
+            android:textAlignment="center"
+            android:text="example" />
     </LinearLayout>
 </RelativeLayout>

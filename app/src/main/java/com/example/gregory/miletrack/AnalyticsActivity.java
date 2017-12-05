@@ -39,8 +39,9 @@ public class AnalyticsActivity extends AppCompatActivity {
         db = new DatabaseHandler(getApplicationContext());
         setContentView(R.layout.activity_analytics);
         spinner = (Spinner) findViewById(R.id.duration);
-
-
+        totalMiles =  (TextView) findViewById(R.id.total_mile_change);
+        largestMiles = (TextView) findViewById(R.id.long_mile_change);
+        avgMiles    = (TextView) findViewById(R.id.avg_mile_change);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -48,15 +49,17 @@ public class AnalyticsActivity extends AppCompatActivity {
                 list = db.getAllEvents();
                 total = 0;
                 largest = 0;
+                Date today = new Date();
+                usable = new ArrayList<MileEvent>();
                 switch (position){
                     case 0:
                         //today
                         total = 0;
-                        Date date = new Date();
+                        largest = 0;
                         cal = Calendar.getInstance();
-                        cal.setTime(date);
+                        cal.setTime(today);
                         listcal = Calendar.getInstance();
-                        usable = new ArrayList<MileEvent>();
+
                         for (int i = 0; i < list.size(); i++){
                             listcal.setTime(list.get(i).getEventDate());
                             if (listcal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR)){
@@ -71,19 +74,25 @@ public class AnalyticsActivity extends AppCompatActivity {
                         }
                         avg = total / usable.size();
 
-                        totalMiles =  (TextView) findViewById(R.id.total_mile_change);
+
                         totalMiles.setText(Double.toString(total));
-                        largestMiles = (TextView) findViewById(R.id.long_mile_change);
                         largestMiles.setText(Double.toString(largest));
-                        avgMiles    = (TextView) findViewById(R.id.avg_mile_change);
                         avgMiles.setText(Double.toString(avg));
                         break;
 
                     case 1:
                         //yesterday
-                        usable = new ArrayList<MileEvent>();
-                        usable = db.getAllEvents();
+                        total = 0;
                         largest = 0;
+                        cal = Calendar.getInstance();
+                        cal.setTime(today);
+                        listcal = Calendar.getInstance();
+
+                        for (int i = 0; i < list.size(); i++){
+                            listcal.setTime(list.get(i).getEventDate());
+                            if (listcal.get(Calendar.DAY_OF_YEAR) == (cal.get(Calendar.DAY_OF_YEAR)-1))
+                                usable.add(list.get(i));
+                        }
                         for (int i = 0; i < usable.size();i++){
                             total += usable.get(i).getDistance();
                             if (usable.get(i).getDistance() > largest )
@@ -92,20 +101,54 @@ public class AnalyticsActivity extends AppCompatActivity {
 
                         avg = total / usable.size();
 
-
-                        totalMiles =  (TextView) findViewById(R.id.total_mile_change);
+                        if (largest == Double.NaN){
+                            largest = 0;
+                        }
                         totalMiles.setText(Double.toString(total));
-                        largestMiles = (TextView) findViewById(R.id.long_mile_change);
                         largestMiles.setText(Double.toString(largest));
-                        avgMiles    = (TextView) findViewById(R.id.avg_mile_change);
                         avgMiles.setText(Double.toString(avg));
                         break;
                     case 2:
                         //week
+                        total = 0;
+                        largest = 0;
                         cal = Calendar.getInstance();
-                        cal.add(Calendar.DAY_OF_YEAR,-1);
+                        cal.setTime(today);
+                        listcal = Calendar.getInstance();
+                        listcal = Calendar.getInstance();
                         for (int i = 0; i < list.size(); i++){
+                            listcal.setTime(list.get(i).getEventDate());
+                            if (listcal.get(Calendar.DAY_OF_YEAR) <= cal.get(Calendar.DAY_OF_YEAR) ||
+                                listcal.get(Calendar.DAY_OF_YEAR) >= (cal.get(Calendar.DAY_OF_YEAR)-7)){
+                                usable.add(list.get(i));
+                            }
+                        }
+                        for (int i = 0; i < usable.size();i++){
+                            Double x = 0.0;
+                            x += usable.get(i).getDistance();
+                            total += x;
+                            if (x > largest)
+                                largest = x;
+                        }
+                        avg = total / usable.size();
 
+
+                        totalMiles.setText(Double.toString(total));
+                        largestMiles.setText(Double.toString(largest));
+                        avgMiles.setText(Double.toString(avg));
+                        break;
+                    case 3:
+                        total = 0;
+                        largest = 0;
+                        cal = Calendar.getInstance();
+                        cal.setTime(today);
+                        listcal = Calendar.getInstance();
+                        for (int i = 0; i < list.size(); i++){
+                            listcal.setTime(list.get(i).getEventDate());
+                            if (listcal.get(Calendar.DAY_OF_YEAR) <= cal.get(Calendar.DAY_OF_YEAR) ||
+                                    listcal.get(Calendar.DAY_OF_YEAR) >= (cal.get(Calendar.DAY_OF_YEAR-30))){
+                                usable.add(list.get(i));
+                            }
                         }
                         for (int i = 0; i < usable.size();i++){
                             Double x = usable.get(i).getDistance();
@@ -114,20 +157,9 @@ public class AnalyticsActivity extends AppCompatActivity {
                                 largest = x;
                         }
                         avg = total / usable.size();
-
-                        totalMiles =  (TextView) findViewById(R.id.total_mile_change);
                         totalMiles.setText(Double.toString(total));
-                        largestMiles = (TextView) findViewById(R.id.long_mile_change);
                         largestMiles.setText(Double.toString(largest));
-                        avgMiles    = (TextView) findViewById(R.id.avg_mile_change);
                         avgMiles.setText(Double.toString(avg));
-                        break;
-                    case 3:
-                        totalMiles.setText("");
-                        largestMiles.setText("");
-                        avgMiles.setText("");
-                        db.deleteAll();
-                        db.setEventid(1);
                         break;
                 }
             }
@@ -162,6 +194,10 @@ public class AnalyticsActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
 
         }
+
+    }
+
+    public void setViews(double avg, double largest, double total){
 
     }
 }

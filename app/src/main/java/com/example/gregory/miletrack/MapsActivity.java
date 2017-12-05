@@ -1,9 +1,14 @@
 package com.example.gregory.miletrack;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -16,8 +21,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -37,7 +44,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.Date;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -63,17 +82,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
-
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+    private AsyncTask tracking;
+    private static Button trackButton;
+    private Boolean flag,flag1;
+    private LatLng start, stop;
+    private double dist;
 
     private DatabaseHandler db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
         db = new DatabaseHandler(getApplicationContext());
 
         // Construct a GeoDataClient.
@@ -88,8 +110,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-        mapFragment.getMapAsync(this);
+        trackButton = (Button) findViewById(R.id.tracking_button);
 
+        mapFragment.getMapAsync(this);
+        flag = true;
 
     }
 
@@ -101,6 +125,186 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreateOptionsMenu(menu);
         return true;
     }
+
+    public void onClickTrack(View viw){
+        Button btn = (Button) findViewById(R.id.tracking_button);
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Location location = new Location("");
+        try {
+            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        } catch (SecurityException e){
+            e.printStackTrace();
+        }
+        flag1 = false;
+        if (flag) {
+            btn.setText("Stop Tracking");
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(location.getLatitude(),mLastKnownLocation.getLongitude()))
+                    .title("Origin"));
+            tracking = getTask();
+            tracking.execute();
+            flag = false;
+        } else {
+            flag = true;
+            btn.setText("Track");
+            tracking.cancel(true);
+            mMap.clear();
+        }
+
+    }
+
+
+    public AsyncTask<Object,Void,Void> getTask (){
+        return new MyTask();
+    }
+
+    private class MyTask extends AsyncTask<Object, Void, Void>{
+        LatLng origin, temp, current;
+        double dist, miles;
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Location location;
+
+        protected void onPreExecute(){
+            try {
+                location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+            if (location == null){
+                this.cancel(true);
+            } else {
+                origin = new LatLng(location.getLatitude(), location.getLongitude());
+            }
+        }
+
+
+
+        @Override
+        protected Void doInBackground(Object... voids) {
+
+            dist = 0;
+            temp = origin;
+
+
+            Button btn1 = (Button) findViewById(R.id.tracking_button);
+            while (isCancelled() == false){
+                try {
+                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                } catch (SecurityException e){
+                    e.printStackTrace();
+                }
+                current = new LatLng(location.getLatitude(),location.getLongitude());
+                try{
+                    Thread.sleep(10000);
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+                miles = getDistanceOnRoad(temp.latitude,temp.longitude,current.latitude,current.longitude);
+                if (miles > .001) {
+                    dist += miles;
+                    temp = current;
+                    publishProgress();
+                }
+
+            }
+
+            if (dist == 0){
+                try {
+                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                } catch (SecurityException e){
+                    e.printStackTrace();
+                }
+                dist = getDistanceOnRoad(origin.latitude,origin.longitude,current.latitude,current.longitude);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result){
+
+        }
+
+        @Override
+        protected void onCancelled(Void result) {
+            flag1 = true;
+            MileEvent event = new MileEvent();
+            Date today = new Date();
+
+            event.setEventDate(today);
+            event.setStartLong(origin.longitude);
+            event.setStartLat(origin.latitude);
+            event.setEndLong(current.longitude);
+            event.setEndLat(current.latitude);
+            event.setDistance(dist);
+            db.addEvent(event);
+        }
+
+        protected void publishProgress(){
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(current.latitude,current.longitude))
+                    );
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(current.latitude,
+                                    current.longitude), DEFAULT_ZOOM));
+                }
+            });
+        }
+    }
+
+
+    String response, parsedDistance;
+    private Double getDistanceOnRoad(final double oLat, final double oLong, final double eLat, final double eLong){
+
+
+        Thread thread=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL("http://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLong + "&destination=" + eLat + "," + eLong + "&sensor=false&units=imperial&mode=driving");
+                    final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    InputStream in = new BufferedInputStream(conn.getInputStream());
+                    response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray array = jsonObject.getJSONArray("routes");
+                    JSONObject routes = array.getJSONObject(0);
+                    JSONArray legs = routes.getJSONArray("legs");
+                    JSONObject steps = legs.getJSONObject(0);
+                    JSONObject distance = steps.getJSONObject("distance");
+                    parsedDistance=distance.getString("text");
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        String[] words = parsedDistance.split("\\s+");
+        return Double.parseDouble(words[0]);
+    }
+
+
+
+
 
     public boolean onOptionsItemSelected(MenuItem item){
         switch( item.getItemId()){
@@ -185,6 +389,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
                             mLastKnownLocation = task.getResult();
+                            if (mLastKnownLocation == null){
+                                mLastKnownLocation = new Location("");
+                            }
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
@@ -224,4 +431,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e("Exception: %s", e.getMessage());
         }
     }
+
+
 }
