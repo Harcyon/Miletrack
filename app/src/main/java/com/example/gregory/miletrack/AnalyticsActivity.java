@@ -49,6 +49,7 @@ public class AnalyticsActivity extends AppCompatActivity {
                 list = db.getAllEvents();
                 total = 0;
                 largest = 0;
+                avg = 0;
                 Date today = new Date();
                 usable = new ArrayList<MileEvent>();
                 switch (position){
@@ -73,7 +74,9 @@ public class AnalyticsActivity extends AppCompatActivity {
                                 largest = x;
                         }
                         avg = total / usable.size();
-
+                        if (Double.isNaN(avg)){
+                            avg = 0;
+                        }
 
                         totalMiles.setText(Double.toString(total));
                         largestMiles.setText(Double.toString(largest));
@@ -100,6 +103,10 @@ public class AnalyticsActivity extends AppCompatActivity {
                         }
 
                         avg = total / usable.size();
+
+                        if (Double.isNaN(avg)){
+                            avg = 0;
+                        }
 
                         if (largest == Double.NaN){
                             largest = 0;
@@ -132,6 +139,9 @@ public class AnalyticsActivity extends AppCompatActivity {
                         }
                         avg = total / usable.size();
 
+                        if (Double.isNaN(avg)){
+                            avg = 0;
+                        }
 
                         totalMiles.setText(Double.toString(total));
                         largestMiles.setText(Double.toString(largest));
@@ -157,6 +167,11 @@ public class AnalyticsActivity extends AppCompatActivity {
                                 largest = x;
                         }
                         avg = total / usable.size();
+
+                        if (Double.isNaN(avg)){
+                            avg = 0;
+                        }
+
                         totalMiles.setText(Double.toString(total));
                         largestMiles.setText(Double.toString(largest));
                         avgMiles.setText(Double.toString(avg));

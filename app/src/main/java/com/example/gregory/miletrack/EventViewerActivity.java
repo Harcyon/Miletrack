@@ -11,6 +11,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 /**
  * Created by Gregory on 11/6/2017.
@@ -21,6 +25,7 @@ public class EventViewerActivity extends AppCompatActivity {
     private ListView listView;
     private DatabaseHandler db;
     private myAdapter adapter;
+    private Cursor cursor;
     final String[] from = new String[]{db.KEY_ID,db.KEY_START_LAT,db.KEY_START_LONG,db.KEY_END_LAT,db.KEY_END_LONG,db.KEY_DISTANCE,db.KEY_EVENT_DATE};
 
     @Override
@@ -30,24 +35,27 @@ public class EventViewerActivity extends AppCompatActivity {
         db = new DatabaseHandler(getApplicationContext());
         setContentView(R.layout.activity_event_viewer);
 
-        Cursor cursor = db.fetch();
+        cursor = db.fetch();
         listView = (ListView) findViewById(R.id.db_list);
         listView.setEmptyView(findViewById(R.id.empty));
 
         adapter = new myAdapter(this,cursor);
 
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent i = new Intent(view.getContext(),EventItemViewer.class);
-//                i.putExtra("position",position);
-//                startActivityForResult(i,0);
+                TextView text = (TextView) view.findViewById(R.id.db_id);
+                double dbid = Double.parseDouble(text.getText().toString());
+                Intent i = new Intent(EventViewerActivity.this, EventItemViewer.class);
+                Toast.makeText(EventViewerActivity.this, Double.toString(dbid), Toast.LENGTH_SHORT).show();
+                i.putExtra("dbid",Double.toString(dbid));
+                startActivity(i);
             }
         });
 
     }
-
 
 
 
@@ -63,6 +71,7 @@ public class EventViewerActivity extends AppCompatActivity {
 
     public void onResume(){
         super.onResume();
+
         adapter.notifyDataSetChanged();
     }
 

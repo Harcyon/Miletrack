@@ -128,14 +128,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onClickTrack(View viw){
         Button btn = (Button) findViewById(R.id.tracking_button);
-        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        getLocationPermission();
+        LocationManager lm = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Location location = new Location("");
         try {
             location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         } catch (SecurityException e){
             e.printStackTrace();
         }
-        flag1 = false;
         if (flag) {
             btn.setText("Stop Tracking");
             mMap.addMarker(new MarkerOptions()
@@ -217,6 +217,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 dist = getDistanceOnRoad(origin.latitude,origin.longitude,current.latitude,current.longitude);
             }
 
+            dist = dist / 1000;
             return null;
         }
 
@@ -227,17 +228,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         protected void onCancelled(Void result) {
-            flag1 = true;
-            MileEvent event = new MileEvent();
-            Date today = new Date();
+            if (dist > 1) {
+                MileEvent event = new MileEvent();
+                Date today = new Date();
 
-            event.setEventDate(today);
-            event.setStartLong(origin.longitude);
-            event.setStartLat(origin.latitude);
-            event.setEndLong(current.longitude);
-            event.setEndLat(current.latitude);
-            event.setDistance(dist);
-            db.addEvent(event);
+                event.setEventDate(today);
+                event.setStartLong(origin.longitude);
+                event.setStartLat(origin.latitude);
+                event.setEndLong(current.longitude);
+                event.setEndLat(current.latitude);
+                event.setDistance(dist);
+                db.addEvent(event);
+            }
         }
 
         protected void publishProgress(){
@@ -338,6 +340,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
